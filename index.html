@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Snake Water Gun 2077 — Neon</title>
+<style>
+  :root{
+    --bg:#05030a;
+    --neon-pink:#ff2d95;
+    --neon-blue:#00f0ff;
+    --neon-green:#00ff9c;
+    --glass: rgba(255,255,255,0.04);
+    --txt:#e9f7ff;
+  }
+  *{box-sizing:border-box;font-family:Inter,Segoe UI,Arial}
+  body{
+    margin:0;background:radial-gradient(circle at 10% 20%, rgba(0,255,200,0.03), transparent 10%),
+                   linear-gradient(180deg,#04040a 0%, #070719 100%);
+    color:var(--txt);min-height:100vh;display:flex;align-items:center;justify-content:center;
+  }
+  .card{
+    width:860px;max-width:95%;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border:1px solid rgba(255,255,255,0.04);padding:28px;border-radius:14px;backdrop-filter: blur(6px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+  }
+  h1{margin:0 0 10px;font-size:28px;letter-spacing:0.6px;color:var(--neon-pink);text-shadow:0 0 16px rgba(255,45,149,0.16)}
+  .sub{color:#9fb7c7;margin-bottom:20px}
+  .board{display:flex;gap:20px;align-items:flex-start}
+  .left{flex:1}
+  .right{width:320px}
+  .neon-btn{display:flex;gap:12px}
+  button.choice{
+    flex:1;padding:16px;border-radius:10px;border:0;font-weight:700;font-size:16px;cursor:pointer;
+    color:#03060a;background:var(--glass);position:relative;overflow:hidden;
+    transition:all .18s ease;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.6), 0 0 18px rgba(0,0,0,0.2) inset;
+  }
+  button.choice:hover{transform:translateY(-4px);filter:brightness(1.06)}
+  .snake{box-shadow:0 6px 28px rgba(255,45,149,0.08), 0 0 18px rgba(255,45,149,0.12) inset; border:1px solid rgba(255,45,149,0.12)}
+  .water{box-shadow:0 6px 28px rgba(0,240,255,0.06); border:1px solid rgba(0,240,255,0.12)}
+  .gun{box-shadow:0 6px 28px rgba(0,255,156,0.06); border:1px solid rgba(0,255,156,0.12)}
+
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.016), transparent); padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+  .result{font-size:18px;margin:12px 0;padding:10px;border-radius:8px;background:rgba(0,0,0,0.25);min-height:54px}
+  .score{display:flex;justify-content:space-between;gap:10px;margin-top:8px}
+  .score div{flex:1;text-align:center;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);font-weight:700}
+  .xp-wrap{margin-top:14px}
+  .xp-bar{height:14px;background:rgba(255,255,255,0.04);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+  .xp-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--neon-green),var(--neon-blue));box-shadow:0 0 18px rgba(0,255,156,0.08)}
+  .glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 10% 10%, rgba(255,45,149,0.06), transparent 6%), radial-gradient(circle at 90% 90%, rgba(0,240,255,0.03), transparent 8%)}
+
+  @media(max-width:760px){
+    .board{flex-direction:column}
+    .right{width:100%}
+    .neon-btn{flex-direction:column}
+    button.choice{padding:14px}
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div style="position:relative">
+      <h1>Snake • Water • Gun — 2077 Neon</h1>
+      <div class="sub">Click ek choose karo — XP badhao, level up karo — Senpai mode activated ✨</div>
+      <div class="glow"></div>
+    </div>
+
+    <div class="board" style="margin-top:12px">
+      <div class="left">
+        <div class="panel">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-weight:800">Your Move</div>
+            <div id="compChoice" style="opacity:0.9">Computer: —</div>
+          </div>
+
+          <div style="margin-top:12px" class="neon-btn">
+            <button class="choice snake" data-val="snake">🐍 Snake</button>
+            <button class="choice water" data-val="water">💧 Water</button>
+            <button class="choice gun" data-val="gun">🔫 Gun</button>
+          </div>
+
+          <div class="result" id="result">Let's play — choose your weapon!</div>
+
+          <div class="score">
+            <div>👤 You: <span id="youScore">0</span></div>
+            <div>XP: <span id="xpNum">0</span></div>
+            <div>🤖 CPU: <span id="cpuScore">0</span></div>
+          </div>
+
+          <div class="xp-wrap">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px">
+              <div style="opacity:0.75">XP BAR</div><div style="opacity:0.75" id="levelTxt">Level 1</div>
+            </div>
+            <div class="xp-bar" style="margin-top:8px"><div class="xp-fill" id="xpFill"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="panel">
+          <div style="font-weight:800;margin-bottom:8px">How it works</div>
+          <ul style="margin:0;padding-left:18px;opacity:0.9">
+            <li>Snake beats Water 🐍➡️💧</li>
+            <li>Water beats Gun 💧➡️🔫</li>
+            <li>Gun beats Snake 🔫➡️🐍</li>
+          </ul>
+          <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.02)"/>
+          <div style="opacity:0.9">Tips: Win to earn XP (+40). Lose -20 XP. Reach 200 XP to level up.</div>
+          <div style="margin-top:12px;text-align:center">
+            <button id="resetBtn" style="margin-top:12px;padding:10px 14px;border-radius:8px;border:0;background:var(--neon-blue);color:#001;cursor:pointer;font-weight:700">Reset Game</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const choices = ["snake","water","gun"];
+  let you=0, cpu=0, xp=0, level=1;
+
+  const youScore = document.getElementById('youScore');
+  const cpuScore = document.getElementById('cpuScore');
+  const resultDiv = document.getElementById('result');
+  const compChoice = document.getElementById('compChoice');
+  const xpFill = document.getElementById('xpFill');
+  const xpNum = document.getElementById('xpNum');
+  const levelTxt = document.getElementById('levelTxt');
+
+  function randChoice(){ return choices[Math.floor(Math.random()*choices.length)]; }
+
+  function updateUI(){
+    youScore.textContent = you;
+    cpuScore.textContent = cpu;
+    xpNum.textContent = xp;
+    xpFill.style.width = Math.min(100, (xp/ (level*200)) * 100) + '%';
+    levelTxt.textContent = 'Level ' + level;
+  }
+
+  function play(user){
+    const comp = randChoice();
+    compChoice.textContent = 'Computer: ' + comp.toUpperCase();
+    if(user==comp){
+      resultDiv.textContent = "It's a DRAW! Try again — Senpai ✨";
+      resultDiv.style.color = '#fff';
+    } else if(
+      (user==='snake' && comp==='water') ||
+      (user==='water' && comp==='
